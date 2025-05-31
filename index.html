@@ -216,12 +216,8 @@
       font-size: 20px;
       margin-top: 15px;
       text-align: center;
-      
-      /* Smooth transition properties for appearing/disappearing */
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s ease-out;
+      /* REMOVED: opacity, visibility, transform, transition from here */
+      /* These properties are now controlled by the #status div directly */
     }
     .pass { color: var(--progress-green); }
     .fail { color: var(--progress-red); }
@@ -631,7 +627,7 @@
         let message = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz!</div>";
         let barColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
 
-        if (target > 60) {
+        if (target > 60) { // If target is different from default 60
             if (totalContribution >= target) {
                 message = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz ve hedef başarılı!</div>";
                 barColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
@@ -715,3 +711,4 @@
   </script>
 </body>
 </html>
+
