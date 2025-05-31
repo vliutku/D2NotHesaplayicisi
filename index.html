@@ -3,62 +3,241 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>Ankara Tıp Not Hesaplama</title>
+  <title>Ankara Tıp Not Hesaplayıcısı – Dönem 2</title>
   <style>
-    input[type="text"] {
+    /* Basic styling for inputs in both themes */
+    input[type="text"], input[type="number"] {
+      padding: 4px 8px;
+      border: 1px solid;
+      border-radius: 5px;
+      width: 80px; /* Adjusted for better mobile fit */
+      box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    }
+
+    /* Dark theme specific input styles */
+    body.dark input[type="text"],
+    body.dark input[type="number"] {
       background-color: #2e2e2e;
       color: #ffffff;
-      border: 1px solid #777;
-      border-radius: 5px;
-      padding: 4px 8px;
-      width: 80px;
+      border-color: #777;
     }
-    body:not(.dark) input[type="text"] {
+
+    /* Light theme specific input styles */
+    body:not(.dark) input[type="text"],
+    body:not(.dark) input[type="number"] {
       background-color: #f2f2f2;
       color: #000;
-      border: 1px solid #ccc;
+      border-color: #ccc;
     }
+
+    /* Root variables for themes */
     :root {
-      --bg: #f9f9f9; --text: #000; --table: #fff; --border: #ccc; --button-bg: #7f1d1d;
-      --progress-red: #dc2626; --progress-yellow: #f59e0b; --progress-green: #16a34a;
+      --bg: #f9f9f9;
+      --text: #000;
+      --table-bg: #fff;
+      --border: #ccc;
+      --button-bg: #7f1d1d;
+      --progress-red: #dc2626;
+      --progress-yellow: #f59e0b;
+      --progress-green: #16a34a;
+      --header-bg: #7f1d1d;
     }
+
+    /* Dark theme variables */
     body.dark {
-      --bg: #121212; --text: #fff; --table: #1e1e1e; --border: #444;
+      --bg: #121212;
+      --text: #fff;
+      --table-bg: #1e1e1e;
+      --border: #444;
+      --button-bg: #9b2c2c; /* Slightly adjusted for dark theme */
+      --header-bg: #5c1616; /* Darker header for dark theme */
     }
+
+    /* Body and general layout */
     body {
-      font-family: Arial, sans-serif; background-color: var(--bg); color: var(--text);
-      margin: 0; padding: 20px; max-width: 600px; margin: auto;
+      font-family: 'Inter', Arial, sans-serif; /* Prefer Inter font */
+      background-color: var(--bg);
+      color: var(--text);
+      margin: 0;
+      padding: 20px;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
     }
-    .logo { display: block; margin: 0 auto 10px; width: 120px; }
-    h1 { font-size: 24px; text-align: center; margin-bottom: 20px; }
-    .controls { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 20px; }
+
+    /* Logo styling */
+    .logo {
+      display: block;
+      margin: 0 auto 10px;
+      width: 120px;
+      max-width: 100%; /* Ensure logo scales down on small screens */
+      height: auto;
+      border-radius: 8px; /* Rounded corners for the logo */
+    }
+
+    /* Heading styling */
+    h1 {
+      font-size: 24px;
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+
+    /* Controls section styling */
+    .controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    /* Input and select common styling */
     input[type="number"], select {
-      padding: 8px; font-size: 16px; width: 200px;
-      background-color: #fff; color: #000; border: 1px solid var(--border); border-radius: 4px;
+      padding: 8px;
+      font-size: 16px;
+      width: 200px;
+      max-width: 100%; /* Ensure responsiveness */
+      background-color: var(--table-bg); /* Use table background for consistency */
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      box-sizing: border-box;
     }
-    body.dark input[type="number"] {
-      background-color: #2c2c2c !important; color: #fff !important;
-      -webkit-appearance: none; appearance: none;
+
+    /* Table header styling */
+    thead tr th {
+      background-color: var(--header-bg);
+      color: white;
+      border-radius: 4px 4px 0 0; /* Rounded top corners for header */
     }
-    thead tr th { background-color: #7f1d1d; color: white; }
-    table { border-collapse: collapse; width: 100%; background: var(--table); }
-    th, td { border: 1px solid var(--border); padding: 10px; text-align: left; font-size: 15px; }
+
+    /* Table styling */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: var(--table-bg);
+      border-radius: 8px; /* Rounded corners for the entire table */
+      overflow: hidden; /* Ensures rounded corners clip content */
+    }
+
+    /* Table cell styling */
+    th, td {
+      border: 1px solid var(--border);
+      padding: 10px;
+      text-align: left;
+      font-size: 15px;
+    }
+
+    /* Button styling */
     button {
-      width: 100%; padding: 12px; font-size: 16px; margin-top: 20px;
-      background-color: var(--button-bg); color: white; border: none; border-radius: 4px;
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-top: 20px;
+      background-color: var(--button-bg);
+      color: white;
+      border: none;
+      border-radius: 8px; /* More rounded corners for buttons */
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     }
-    .result { margin-top: 25px; font-weight: bold; font-size: 16px; text-align: center; line-height: 1.6; }
-    .pass { color: #00cc66; font-size: 20px; margin-top: 15px; text-align: center; }
-    .fail { color: #ff5050; font-size: 20px; margin-top: 15px; text-align: center; }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    /* Result display styling */
+    .result {
+      margin-top: 25px;
+      font-weight: bold;
+      font-size: 16px;
+      text-align: center;
+      line-height: 1.6;
+      background-color: var(--table-bg);
+      padding: 15px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+
+    /* Pass/Fail status styling */
+    .pass {
+      color: var(--progress-green);
+      font-size: 20px;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    .fail {
+      color: var(--progress-red);
+      font-size: 20px;
+      margin-top: 15px;
+      text-align: center;
+    }
+
+    /* Theme toggle button styling */
     .toggle {
-      background: none; border: 1px solid var(--border); color: var(--text);
-      padding: 6px 10px; border-radius: 5px; cursor: pointer;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: auto; /* Override 100% width for general buttons */
+      box-shadow: none; /* No shadow for toggle button */
     }
+
+    /* Progress bar container */
     .progress-container {
-      width: 100%; background-color: #ddd; border-radius: 10px; margin-top: 25px; height: 25px; overflow: hidden;
+      width: 100%;
+      background-color: #ddd;
+      border-radius: 10px;
+      margin-top: 25px;
+      height: 25px;
+      overflow: hidden;
+      border: 1px solid var(--border); /* Add border for better visual */
     }
+
+    /* Progress bar fill */
     .progress-bar {
-      height: 100%; text-align: center; line-height: 25px; font-weight: bold; color: white; border-radius: 10px;
+      height: 100%;
+      text-align: center;
+      line-height: 25px;
+      font-weight: bold;
+      color: white;
+      border-radius: 10px; /* Rounded corners for the bar */
+      transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out; /* Smooth transitions */
+    }
+
+    /* Small text information */
+    p {
+      font-size: 0.8rem;
+      color: gray;
+      margin-top: 10px;
+      line-height: 1.4;
+    }
+
+    /* Responsive adjustments for smaller screens */
+    @media (max-width: 480px) {
+      body {
+        padding: 15px;
+      }
+      h1 {
+        font-size: 20px;
+      }
+      th, td {
+        padding: 8px;
+        font-size: 14px;
+      }
+      input[type="text"], input[type="number"] {
+        width: 60px; /* Smaller input width for very small screens */
+      }
+      button {
+        padding: 10px;
+        font-size: 15px;
+      }
     }
   </style>
 </head>
@@ -66,7 +245,7 @@
   <div style="position: absolute; top: 8px; left: 12px; font-size: 12px; color: gray; opacity: 0.7;">Mayıs 2025</div>
   <div style="position: absolute; top: 8px; right: 12px; font-size: 12px; color: gray; opacity: 0.7;">Ali U. - 2030 Mezunları</div>
 
-  <img src="E6CB205A-53AE-4A4A-A516-BA6109CF04BA.png" class="logo" alt="Ankara Tıp Logosu" />
+  <img src="image.png" class="logo" alt="Ankara Tıp Logosu" />
   <h1>Ankara Tıp Not Hesaplayıcısı – Dönem 2</h1>
 
   <div class="controls">
@@ -81,12 +260,8 @@
     <tbody id="table-body"></tbody>
   </table>
 
-  <p style="font-size: 0.8rem; color: gray; margin-top: 10px;">
-    Not: Gelişim Notunu 100 üzerinden oranlayarak giriniz; mesela 20 soru var 10 yaptınız 50 yazınız.
-  </p>
-  <p style="font-size: 0.8rem; color: gray; margin-top: 5px;">
-    Not: Final sınavından geçebilmek için teorik sınavın %60'ı ile pratik sınavın %40'ının toplamı en az 50 olmalıdır.
-  </p>
+  <p>* Lütfen Gelişim Notunu 100 üzerinden oranlayarak giriniz; mesela 20 soru var 10 yaptınız 50 yazınız.</p>
+  <p>Not: Final sınavından geçebilmek için teorik sınavın %60'ı ile pratik sınavın %40'ının toplamı en az 50 olmalıdır.</p>
 
   <button onclick="calculate()">Hesapla</button>
   <div class="result" id="result"></div>
@@ -96,25 +271,22 @@
   <div id="status"></div>
 
   <script>
+    // Define the components of the grading system with their weights
     const components = [
-  ["M1 teorik", 6],
-  ["M2 teorik", 6],
-  ["M3 teorik", 6],
-  ["M4 teorik", 6],
-  ["NYUS 1", 3],
-  ["NYUS 2", 3],
-  ["NYUS 3", 3],
-  ["NYUS 4", 3],
-  ["PDÖ", 1],
-  ["NYKS", 1],
-  ["İletişim", 2],
-  ["Final Teorik", 36],
-  ["Final Pratik", 24]
-];
+      ["M1 teorik", 6], ["M2 teorik", 6], ["M3 teorik", 6], ["M4 teorik", 6],
+      ["NYUS 1", 3], ["NYUS 2", 3], ["NYUS 3", 3], ["NYUS 4", 3],
+      ["PDÖ", 1], ["NYKS", 1], ["İletişim", 2],
+      ["Final Teorik", 36], ["Final Pratik", 24]
+    ];
 
     const tbody = document.getElementById("table-body");
+
+    // Dynamically populate the table with input fields for each component
     components.forEach(([name, weight], index) => {
       const row = document.createElement("tr");
+      // Use inputmode="decimal" for scores that can be non-integers
+      // Use oninput to validate range as user types
+      // Use onkeydown to handle Enter key for navigation
       row.innerHTML = `
         <td>${name}</td><td>${weight}</td>
         <td><input type="text" id="score-${index}" min="0" max="100" step="0.1"
@@ -123,65 +295,77 @@
       tbody.appendChild(row);
     });
 
+    /**
+     * Calculates the overall grade and determines pass/fail status.
+     */
     function calculate() {
-  const finalTheoRaw = document.getElementById("score-9").value.trim();
-  const finalPraRaw = document.getElementById("score-10").value.trim();
-  const finalTheoreticalScore = parseFloat(finalTheoRaw) || 0;
-  const finalPracticalScore = parseFloat(finalPraRaw) || 0;
-  if (finalTheoRaw !== "" && finalPraRaw !== "") {
-    const finalCombined = (finalTheoreticalScore * 0.6) + (finalPracticalScore * 0.4);
-    if (finalCombined < 50) {
-      document.getElementById("result").innerHTML = "Kaldınız (final ağırlıklı ortalaması 50'nin altında)";
-      document.getElementById("result").style.color = "#f87171";
-      document.getElementById("status").innerHTML = "<div class='fail'>🔴 Kaldın</div>";
-      document.getElementById("progressWrapper").style.display = "none";
-      return;
-    }
-  
+      // Correct indices for Final Teorik and Final Pratik
+      const finalTeorikIndex = components.findIndex(c => c[0] === "Final Teorik"); // Should be 11
+      const finalPratikIndex = components.findIndex(c => c[0] === "Final Pratik"); // Should be 12
 
-      let finalTheoreticalScore = 0;
-      let finalPracticalScore = 0;
+      const finalTheoRaw = document.getElementById(`score-${finalTeorikIndex}`).value.trim();
+      const finalPraRaw = document.getElementById(`score-${finalPratikIndex}`).value.trim();
 
+      const finalTheoreticalScore = parseFloat(finalTheoRaw) || 0;
+      const finalPracticalScore = parseFloat(finalPraRaw) || 0;
+
+      // Check final exam pass condition if both final scores are entered
+      if (finalTheoRaw !== "" && finalPraRaw !== "") {
+        const finalCombined = (finalTheoreticalScore * 0.6) + (finalPracticalScore * 0.4);
+        if (finalCombined < 50) {
+          document.getElementById("result").innerHTML = "Kaldınız (final ağırlıklı ortalaması 50'nin altında)";
+          document.getElementById("result").style.color = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
+          document.getElementById("status").innerHTML = "<div class='fail'>🔴 Kaldın</div>";
+          document.getElementById("progressWrapper").style.display = "none";
+          return; // Stop further calculation if final exam condition is not met
+        }
+      }
+
+      // Get target score and ensure it's within valid range
       let target = parseInt(document.getElementById("targetScore").value);
       if (isNaN(target)) target = 60;
       if (target < 60) target = 60;
       if (target > 100) target = 100;
 
-      const totalContribution = components.reduce((sum, [name, w], i) => {
+      let totalContribution = 0;
+      let remainingWeight = 0;
+
+      // Calculate total contribution from entered scores and remaining weight
+      components.forEach(([name, w], i) => {
         const raw = document.getElementById(`score-${i}`).value;
         const value = parseFloat(raw);
-        const v = isNaN(value) ? 0 : value;
-        if (i === 9) finalTheoreticalScore = v;
-        if (i === 10) finalPracticalScore = v;
-        return sum + (v * w / 100);
-      }, 0);
 
-      
+        if (!isNaN(value) && raw.trim() !== "") { // Only add if a valid number is entered
+          totalContribution += (value * w / 100);
+        } else {
+          remainingWeight += w; // Add weight to remaining if score is not entered
+        }
+      });
 
-      const remainingWeight = components.reduce((sum, [_, w], i) => {
-        const raw = document.getElementById(`score-${i}`).value;
-        return sum + (raw.trim() === "" ? w : 0);
-      }, 0);
-
+      // Calculate needed points and average for remaining exams
       let neededPoint = target - totalContribution;
-      if (neededPoint < 0) neededPoint = 0;
+      if (neededPoint < 0) neededPoint = 0; // Cannot need less than 0 points
+
       const neededAverage = remainingWeight > 0 ? (neededPoint / remainingWeight) * 100 : 0;
 
+      // Display results
       document.getElementById("result").innerHTML = `
         ✅ Şu ana kadar puanın: <b>${totalContribution.toFixed(2)}</b><br>
         🎯 Hedef not: <b>${target}</b><br>
         ❗ Kalan puan: <b>${neededPoint.toFixed(2)}</b><br>
         📊 Kalan tüm sınavlarda alınması gereken ortalama puan: <b>${neededAverage.toFixed(2)}</b>`;
 
-      const status = document.getElementById("status"),
-            progress = Math.min((totalContribution / target) * 100, 100),
-            progressBar = document.getElementById("progressBar"),
-            progressWrapper = document.getElementById("progressWrapper");
+      // Update progress bar and status
+      const status = document.getElementById("status");
+      const progress = Math.min((totalContribution / target) * 100, 100); // Cap progress at 100%
+      const progressBar = document.getElementById("progressBar");
+      const progressWrapper = document.getElementById("progressWrapper");
 
-      progressWrapper.style.display = "block";
+      progressWrapper.style.display = "block"; // Show progress bar
       progressBar.style.width = progress + "%";
       progressBar.innerText = Math.floor(progress) + "%";
 
+      // Determine overall pass/fail status and set progress bar color
       if (totalContribution >= 60 && totalContribution < target) {
         status.innerHTML = "<div class='pass'>🟢 Geçtin ama hedef başarısız.</div>";
         progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-yellow');
@@ -194,32 +378,63 @@
       }
     }
 
+    /**
+     * Handles key presses for input fields, specifically the Enter key
+     * to move focus to the next input or trigger calculation.
+     * @param {Event} event - The keyboard event.
+     * @param {number} index - The index of the current input field.
+     */
     function handleKey(event, index) {
       if (event.key === "Enter") {
-        event.preventDefault();
+        event.preventDefault(); // Prevent default Enter behavior (e.g., form submission)
         const nextInput = document.getElementById(`score-${index + 1}`);
-        if (nextInput) nextInput.focus();
-        else calculate();
+        if (nextInput) {
+          nextInput.focus(); // Move focus to the next input
+        } else {
+          calculate(); // If no more inputs, perform calculation
+        }
       }
     }
 
+    /**
+     * Toggles between dark and light themes.
+     */
     function toggleDark() {
       document.body.classList.toggle("dark");
       document.getElementById("themeToggle").textContent =
         document.body.classList.contains("dark") ? "Aydınlık Tema" : "Karanlık Tema";
     }
 
+    /**
+     * Validates and cleans numerical input for scores (0-100 range).
+     * Replaces comma with dot for decimal input.
+     * @param {HTMLInputElement} input - The input element to validate.
+     */
     function validateRange(input) {
-      input.value = input.value.replace(/,/g, ".");
-      input.value = input.value.replace(/[^0-9.]/g, "");
-      if (parseFloat(input.value) > 100) input.value = 100;
-      if (parseFloat(input.value) < 0) input.value = 0;
+      input.value = input.value.replace(/,/g, "."); // Replace comma with dot for decimals
+      input.value = input.value.replace(/[^0-9.]/g, ""); // Allow only numbers and one dot
+
+      // Ensure only one dot is present
+      const parts = input.value.split('.');
+      if (parts.length > 2) {
+        input.value = parts[0] + '.' + parts.slice(1).join('');
+      }
+
+      let val = parseFloat(input.value);
+      if (isNaN(val)) return; // Don't modify if not a number yet
+
+      if (val > 100) input.value = "100";
+      if (val < 0) input.value = "0";
     }
 
+    /**
+     * Validates and cleans numerical input for the target score (60-100 integer range).
+     * @param {HTMLInputElement} input - The input element to validate.
+     */
     function validateTarget(input) {
-      input.value = input.value.replace(/[^0-9]/g, "");
+      input.value = input.value.replace(/[^0-9]/g, ""); // Allow only integers
       let val = parseInt(input.value);
-      if (isNaN(val)) val = 60;
+      if (isNaN(val)) val = 60; // Default to 60 if empty or invalid
       if (val < 60) val = 60;
       if (val > 100) val = 100;
       input.value = val;
