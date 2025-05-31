@@ -4,15 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Ankara Tıp Not Hesaplayıcısı – Dönem 2</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* Basic styling for inputs in both themes */
+    /* Basic styling for all inputs */
     input[type="text"], input[type="number"] {
       padding: 4px 8px;
       border: 1px solid;
       border-radius: 5px;
-      width: 80px; /* Adjusted for better mobile fit */
       box-sizing: border-box; /* Include padding and border in the element's total width and height */
+      transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Smooth transition for focus */
     }
+
+    /* Specific width for the target score input */
+    #targetScore {
+        width: 120px; /* Hedef Not kutusunun genişliği ayarlandı */
+        max-width: 100%; /* Responsive olması için eklendi */
+    }
+
+    /* Width for inputs within table cells (Notun column) */
+    table td input[type="text"],
+    table td input[type="number"] {
+        width: 70px; /* Shorter width for grade inputs */
+    }
+
+    /* Input focus style */
+    input[type="text"]:focus,
+    input[type="number"]:focus {
+      outline: none; /* Remove default outline */
+      border-color: var(--button-bg); /* Highlight with button color */
+      box-shadow: 0 0 0 2px rgba(127, 29, 29, 0.3); /* Subtle shadow */
+    }
+    body.dark input[type="text"]:focus,
+    body.dark input[type="number"]:focus {
+      border-color: var(--button-bg);
+      box-shadow: 0 0 0 2px rgba(155, 44, 44, 0.5); /* Darker shadow for dark theme */
+    }
+
 
     /* Dark theme specific input styles */
     body.dark input[type="text"],
@@ -37,6 +65,9 @@
       --table-bg: #fff;
       --border: #ccc;
       --button-bg: #7f1d1d;
+      --button-bg-dark: #9b2c2c; /* Dark theme button base color */
+      --button-gradient-start: #991b1b; /* Lighter red for gradient */
+      --button-gradient-end: #7f1d1d; /* Darker red for gradient */
       --progress-red: #dc2626;
       --progress-yellow: #f59e0b;
       --progress-green: #16a34a;
@@ -49,13 +80,15 @@
       --text: #fff;
       --table-bg: #1e1e1e;
       --border: #444;
-      --button-bg: #9b2c2c; /* Slightly adjusted for dark theme */
+      --button-bg: var(--button-bg-dark); /* Use dark theme button base color */
+      --button-gradient-start: #b93c3c; /* Adjusted gradient for dark theme */
+      --button-gradient-end: #9b2c2c;
       --header-bg: #5c1616; /* Darker header for dark theme */
     }
 
     /* Body and general layout */
     body {
-      font-family: 'Inter', Arial, sans-serif; /* Prefer Inter font */
+      font-family: 'Inter', sans-serif; /* Prefer Inter font */
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
@@ -77,12 +110,18 @@
     }
 
     /* Heading styling */
-    h1 {
+    h1, h2 {
+      font-family: 'Montserrat', sans-serif; /* New font for headings */
+      font-weight: 700; /* Bold for headings */
       font-size: 24px;
       text-align: center;
       margin-bottom: 20px;
       color: var(--text);
     }
+    h2 {
+      font-size: 20px; /* Slightly smaller for sub-headings */
+    }
+
 
     /* Controls section styling */
     .controls {
@@ -97,7 +136,6 @@
     input[type="number"], select {
       padding: 8px;
       font-size: 16px;
-      width: 200px;
       max-width: 100%; /* Ensure responsiveness */
       background-color: var(--table-bg); /* Use table background for consistency */
       color: var(--text);
@@ -136,17 +174,23 @@
       padding: 12px;
       font-size: 16px;
       margin-top: 20px;
-      background-color: var(--button-bg);
+      background: linear-gradient(to bottom, var(--button-gradient-start), var(--button-gradient-end)); /* Gradient background */
       color: white;
       border: none;
       border-radius: 8px; /* More rounded corners for buttons */
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: background 0.3s ease, transform 0.1s ease, box-shadow 0.3s ease; /* Added box-shadow to transition */
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow */
     }
 
     button:hover {
-      opacity: 0.9;
+      opacity: 1; /* Ensure full opacity on hover */
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+    }
+
+    button:active { /* Pressed state */
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
 
     /* Result display styling */
@@ -160,22 +204,30 @@
       padding: 15px;
       border-radius: 8px;
       border: 1px solid var(--border);
+      
+      /* Smooth transition properties for appearing/disappearing */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s ease-out;
     }
 
     /* Pass/Fail status styling */
-    .pass {
-      color: var(--progress-green);
+    .pass, .fail {
       font-size: 20px;
-      margin-top: 15px;
+      margin-top: 15px; /* İlerleme çubuğu altına boşluk eklendi */
       text-align: center;
+      
+      /* Smooth transition properties for appearing/disappearing */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s ease-out;
     }
+    .pass { color: var(--progress-green); }
+    .fail { color: var(--progress-red); }
+    .pass i, .fail i { margin-right: 8px; } /* Space for icons */
 
-    .fail {
-      color: var(--progress-red);
-      font-size: 20px;
-      margin-top: 15px;
-      text-align: center;
-    }
 
     /* Theme toggle button styling */
     .toggle {
@@ -187,7 +239,21 @@
       cursor: pointer;
       width: auto; /* Override 100% width for general buttons */
       box-shadow: none; /* No shadow for toggle button */
+      /* Remove gradient for toggle button to keep it distinct */
+      background: none;
     }
+    .toggle:hover {
+      background-color: rgba(0,0,0,0.05); /* Subtle hover for toggle */
+      box-shadow: none;
+    }
+    body.dark .toggle:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+    .toggle:active {
+      transform: none; /* No transform for toggle button active state */
+      box-shadow: none;
+    }
+
 
     /* Progress bar container */
     .progress-container {
@@ -198,6 +264,12 @@
       height: 25px;
       overflow: hidden;
       border: 1px solid var(--border); /* Add border for better visual */
+      
+      /* Smooth transition properties for appearing/disappearing */
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease-out, transform 0.5s ease-out, visibility 0.5s ease-out;
     }
 
     /* Progress bar fill */
@@ -231,13 +303,51 @@
         padding: 8px;
         font-size: 14px;
       }
+      /* Make inputs full width on small screens, including table inputs */
       input[type="text"], input[type="number"] {
-        width: 60px; /* Smaller input width for very small screens */
+        width: 100%; 
+      }
+      /* Ensure table inputs are still shorter than 100% if needed for layout */
+      table td input[type="text"],
+      table td input[type="number"] {
+          width: 60px; /* Even shorter for very small screens */
       }
       button {
         padding: 10px;
         font-size: 15px;
       }
+      .controls button { /* Ensure control buttons are also responsive */
+        width: auto;
+        padding: 8px 12px;
+      }
+    }
+
+    /* Styles for save/load/reset buttons */
+    .save-load-buttons {
+      display: flex;
+      flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+      gap: 10px;
+      margin-top: 10px;
+      width: 100%;
+      justify-content: center;
+    }
+
+    .save-load-buttons button {
+      width: auto; /* Allow buttons to size content */
+      flex-grow: 1; /* Distribute space evenly */
+      padding: 10px;
+      margin-top: 0; /* Override default button margin-top */
+      font-size: 15px;
+      background: linear-gradient(to bottom, var(--button-gradient-start), var(--button-gradient-end)); /* Apply gradient */
+    }
+
+    .save-load-buttons button:hover {
+      opacity: 1; /* Ensure full opacity on hover */
+      box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2); /* More pronounced shadow on hover */
+    }
+    .save-load-buttons button:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
     }
   </style>
 </head>
@@ -263,14 +373,18 @@
   <p>* Lütfen Gelişim Notunu 100 üzerinden oranlayarak giriniz; mesela 20 soru var 10 yaptınız 50 yazınız.</p>
   <p>Not: Final sınavından geçebilmek için teorik sınavın %60'ı ile pratik sınavın %40'ının toplamı en az 50 olmalıdır.</p>
 
+  <div class="save-load-buttons">
+    <button onclick="saveGrades()">Notları Kaydet</button>
+    <button onclick="loadGrades()">Notları Yükle</button>
+    <button onclick="resetGrades()">Sıfırla</button>
+  </div>
+
   <button onclick="calculate()">Hesapla</button>
   <div class="result" id="result"></div>
-  <div id="progressWrapper" class="progress-container" style="display:none;">
+  <div id="progressWrapper" class="progress-container">
     <div id="progressBar" class="progress-bar">0%</div>
   </div>
-  <div id="status"></div>
-
-  <script>
+  <div id="status"></div> <script>
     // Define the components of the grading system with their weights
     const components = [
       ["M1 teorik", 6], ["M2 teorik", 6], ["M3 teorik", 6], ["M4 teorik", 6],
@@ -280,13 +394,12 @@
     ];
 
     const tbody = document.getElementById("table-body");
+    const finalTeorikIndex = components.findIndex(c => c[0] === "Final Teorik"); // Index 11
+    const finalPratikIndex = components.findIndex(c => c[0] === "Final Pratik"); // Index 12
 
     // Dynamically populate the table with input fields for each component
     components.forEach(([name, weight], index) => {
       const row = document.createElement("tr");
-      // Use inputmode="decimal" for scores that can be non-integers
-      // Use oninput to validate range as user types
-      // Use onkeydown to handle Enter key for navigation
       row.innerHTML = `
         <td>${name}</td><td>${weight}</td>
         <td><input type="text" id="score-${index}" min="0" max="100" step="0.1"
@@ -296,30 +409,135 @@
     });
 
     /**
+     * Hides the result, progress bar, and status sections with animation.
+     */
+    function hideResultsSections() {
+      const elementsToHide = [
+        document.getElementById("result"),
+        document.getElementById("progressWrapper"),
+        document.getElementById("status")
+      ];
+
+      elementsToHide.forEach(el => {
+        el.style.opacity = "0";
+        el.style.transform = "translateY(20px)";
+        el.style.pointerEvents = "none"; // Disable interactions while fading out
+        // Use setTimeout to set visibility to hidden after transition completes
+        setTimeout(() => {
+          el.style.visibility = "hidden";
+        }, 500); // Match CSS transition duration
+      });
+      document.getElementById("status").innerHTML = ""; // Clear status text immediately
+    }
+
+    /**
+     * Displays a custom alert message with animation.
+     * @param {string} message - The message to display.
+     * @param {string} type - Type of message (success, warning, info).
+     */
+    function alertMessage(message, type) {
+      const resultDiv = document.getElementById("result");
+      resultDiv.style.visibility = "visible";
+      resultDiv.style.opacity = "1";
+      resultDiv.style.transform = "translateY(0)";
+      resultDiv.style.pointerEvents = "auto"; // Enable interactions
+      resultDiv.innerHTML = message;
+      resultDiv.style.color = ""; // Reset color
+      if (type === "success") resultDiv.style.color = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
+      if (type === "warning") resultDiv.style.color = getComputedStyle(document.documentElement).getPropertyValue('--progress-yellow');
+      if (type === "info") resultDiv.style.color = getComputedStyle(document.documentElement).getPropertyValue('--text');
+      
+      // Hide after a few seconds
+      setTimeout(() => {
+        resultDiv.style.opacity = "0";
+        resultDiv.style.transform = "translateY(20px)";
+        resultDiv.style.pointerEvents = "none";
+        setTimeout(() => {
+          resultDiv.innerHTML = ""; // Clear message
+          resultDiv.style.color = ""; // Reset color
+          resultDiv.style.visibility = "hidden";
+        }, 500); // Match CSS transition duration
+      }, 3000);
+    }
+
+    /**
+     * Saves the current input values to localStorage.
+     */
+    function saveGrades() {
+      const grades = {};
+      components.forEach((_, index) => {
+        const inputElement = document.getElementById(`score-${index}`);
+        if (inputElement) {
+          grades[`score-${index}`] = inputElement.value;
+        }
+      });
+      grades['targetScore'] = document.getElementById('targetScore').value;
+      localStorage.setItem('ankaraTipNotlari', JSON.stringify(grades));
+      alertMessage("Notlarınız kaydedildi!", "success");
+    }
+
+    /**
+     * Loads saved input values from localStorage.
+     */
+    function loadGrades() {
+      const savedGrades = localStorage.getItem('ankaraTipNotlari');
+      if (savedGrades) {
+        const grades = JSON.parse(savedGrades);
+        components.forEach((_, index) => {
+          const inputElement = document.getElementById(`score-${index}`);
+          if (inputElement && grades[`score-${index}`] !== undefined) {
+            inputElement.value = grades[`score-${index}`];
+          }
+        });
+        if (grades['targetScore'] !== undefined) {
+          document.getElementById('targetScore').value = grades['targetScore'];
+        }
+        calculate(); // Recalculate after loading
+        alertMessage("Notlarınız yüklendi!", "info");
+      } else {
+        alertMessage("Kaydedilmiş not bulunamadı.", "warning");
+      }
+    }
+
+    /**
+     * Resets all input fields and hides result sections.
+     */
+    function resetGrades() {
+      components.forEach((_, index) => {
+        const inputElement = document.getElementById(`score-${index}`);
+        if (inputElement) {
+          inputElement.value = ""; // Clear the input
+        }
+      });
+      document.getElementById('targetScore').value = "60"; // Reset target score
+      hideResultsSections(); // Hide all result displays with animation
+      alertMessage("Tüm notlar sıfırlandı!", "info");
+    }
+
+    /**
      * Calculates the overall grade and determines pass/fail status.
      */
     function calculate() {
-      // Correct indices for Final Teorik and Final Pratik
-      const finalTeorikIndex = components.findIndex(c => c[0] === "Final Teorik"); // Should be 11
-      const finalPratikIndex = components.findIndex(c => c[0] === "Final Pratik"); // Should be 12
+      // Show result sections when calculate is pressed with animation
+      const elementsToShow = [
+        document.getElementById("result"),
+        document.getElementById("progressWrapper"),
+        document.getElementById("status")
+      ];
+
+      elementsToShow.forEach(el => {
+        el.style.visibility = "visible";
+        el.style.opacity = "1";
+        el.style.transform = "translateY(0)";
+        el.style.pointerEvents = "auto"; // Enable interactions
+      });
+
 
       const finalTheoRaw = document.getElementById(`score-${finalTeorikIndex}`).value.trim();
       const finalPraRaw = document.getElementById(`score-${finalPratikIndex}`).value.trim();
 
       const finalTheoreticalScore = parseFloat(finalTheoRaw) || 0;
       const finalPracticalScore = parseFloat(finalPraRaw) || 0;
-
-      // Check final exam pass condition if both final scores are entered
-      if (finalTheoRaw !== "" && finalPraRaw !== "") {
-        const finalCombined = (finalTheoreticalScore * 0.6) + (finalPracticalScore * 0.4);
-        if (finalCombined < 50) {
-          document.getElementById("result").innerHTML = "Kaldınız (final ağırlıklı ortalaması 50'nin altında)";
-          document.getElementById("result").style.color = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
-          document.getElementById("status").innerHTML = "<div class='fail'>🔴 Kaldın</div>";
-          document.getElementById("progressWrapper").style.display = "none";
-          return; // Stop further calculation if final exam condition is not met
-        }
-      }
 
       // Get target score and ensure it's within valid range
       let target = parseInt(document.getElementById("targetScore").value);
@@ -329,22 +547,24 @@
 
       let totalContribution = 0;
       let remainingWeight = 0;
-
+      
       // Calculate total contribution from entered scores and remaining weight
       components.forEach(([name, w], i) => {
         const raw = document.getElementById(`score-${i}`).value;
         const value = parseFloat(raw);
+        const currentScore = isNaN(value) ? 0 : value; // Use 0 if no score entered for calculation
 
-        if (!isNaN(value) && raw.trim() !== "") { // Only add if a valid number is entered
-          totalContribution += (value * w / 100);
+        const contribution = (currentScore * w / 100);
+        
+        if (!isNaN(value) && raw.trim() !== "") {
+          totalContribution += contribution;
         } else {
-          remainingWeight += w; // Add weight to remaining if score is not entered
+          remainingWeight += w;
         }
       });
 
-      // Calculate needed points and average for remaining exams
       let neededPoint = target - totalContribution;
-      if (neededPoint < 0) neededPoint = 0; // Cannot need less than 0 points
+      if (neededPoint < 0) neededPoint = 0;
 
       const neededAverage = remainingWeight > 0 ? (neededPoint / remainingWeight) * 100 : 0;
 
@@ -357,24 +577,54 @@
 
       // Update progress bar and status
       const status = document.getElementById("status");
-      const progress = Math.min((totalContribution / target) * 100, 100); // Cap progress at 100%
+      const progress = Math.min((totalContribution / target) * 100, 100);
       const progressBar = document.getElementById("progressBar");
       const progressWrapper = document.getElementById("progressWrapper");
 
-      progressWrapper.style.display = "block"; // Show progress bar
+      progressWrapper.style.visibility = "visible";
+      progressWrapper.style.opacity = "1";
+      progressWrapper.style.transform = "translateY(0)";
+      progressWrapper.style.pointerEvents = "auto";
+
       progressBar.style.width = progress + "%";
       progressBar.innerText = Math.floor(progress) + "%";
 
-      // Determine overall pass/fail status and set progress bar color
-      if (totalContribution >= 60 && totalContribution < target) {
-        status.innerHTML = "<div class='pass'>🟢 Geçtin ama hedef başarısız.</div>";
-        progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-yellow');
-      } else if (totalContribution >= target) {
-        status.innerHTML = "<div class='pass'>🟢 Tebrikler, geçtin ve hedef başarılı!</div>";
-        progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
+      // Show status with animation
+      status.style.visibility = "visible";
+      status.style.opacity = "1";
+      status.style.transform = "translateY(0)";
+
+      const passingGrade = 60; // Overall passing grade
+
+      // 1. Check final exam pass condition if both final scores are entered
+      if (finalTheoRaw !== "" && finalPraRaw !== "") {
+        const finalCombined = (finalTheoreticalScore * 0.6) + (finalPracticalScore * 0.4);
+        if (finalCombined < 50) {
+          status.innerHTML = "<div class='fail'><i class='fas fa-times-circle'></i> Maalesef kaldınız. (Final notu yetersiz)</div>";
+          progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
+          return; // Stop further general pass/fail check if final is failed
+        }
+      }
+
+      // 2. Determine overall pass/fail status and target success/failure
+      if (totalContribution < passingGrade) {
+          // Overall average below 60
+          status.innerHTML = "<div class='fail'><i class='fas fa-times-circle'></i> Maalesef kaldınız.</div>";
+          progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
       } else {
-        status.innerHTML = "<div class='fail'>🔴 Kaldın</div>";
-        progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
+          // Overall average 60 or above
+          if (target > passingGrade) { // If target is explicitly set higher than 60
+              if (totalContribution >= target) {
+                  status.innerHTML = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz ve hedef başarılı!</div>";
+                  progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
+              } else { // totalContribution < target
+                  status.innerHTML = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz ama hedef başarısız.</div>";
+                  progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-yellow');
+              }
+          } else { // Target is 60 (or less, but clamped to 60), and overall is 60 or above
+              status.innerHTML = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz!</div>";
+              progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
+          }
       }
     }
 
@@ -439,6 +689,12 @@
       if (val > 100) val = 100;
       input.value = val;
     }
+
+    // Hide results sections on initial page load
+    window.onload = () => {
+      hideResultsSections();
+      loadGrades(); // Still load grades if available
+    };
   </script>
 </body>
 </html>
