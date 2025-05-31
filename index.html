@@ -18,8 +18,7 @@
 
     /* Specific width for the target score input */
     #targetScore {
-        width: 120px; /* Hedef Not kutusunun genişliği ayarlandı */
-        max-width: 100%; /* Responsive olması için eklendi */
+        width: 200px;
     }
 
     /* Width for inputs within table cells (Notun column) */
@@ -215,7 +214,7 @@
     /* Pass/Fail status styling */
     .pass, .fail {
       font-size: 20px;
-      margin-top: 15px; /* İlerleme çubuğu altına boşluk eklendi */
+      margin-top: 15px;
       text-align: center;
       
       /* Smooth transition properties for appearing/disappearing */
@@ -384,7 +383,9 @@
   <div id="progressWrapper" class="progress-container">
     <div id="progressBar" class="progress-bar">0%</div>
   </div>
-  <div id="status"></div> <script>
+  <div id="status"></div>
+
+  <script>
     // Define the components of the grading system with their weights
     const components = [
       ["M1 teorik", 6], ["M2 teorik", 6], ["M3 teorik", 6], ["M4 teorik", 6],
@@ -539,6 +540,30 @@
       const finalTheoreticalScore = parseFloat(finalTheoRaw) || 0;
       const finalPracticalScore = parseFloat(finalPraRaw) || 0;
 
+      // Check final exam pass condition if both final scores are entered
+      if (finalTheoRaw !== "" && finalPraRaw !== "") {
+        const finalCombined = (finalTheoreticalScore * 0.6) + (finalPracticalScore * 0.4);
+        if (finalCombined < 50) {
+          document.getElementById("result").innerHTML = "Kaldınız (final ağırlıklı ortalaması 50'nin altında)";
+          document.getElementById("result").style.color = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
+          
+          // Show status with animation
+          const statusDiv = document.getElementById("status");
+          statusDiv.innerHTML = "<div class='fail'><i class='fas fa-times-circle'></i> Maalesef kaldınız</div>"; // Updated message
+          statusDiv.style.visibility = "visible";
+          statusDiv.style.opacity = "1";
+          statusDiv.style.transform = "translateY(0)";
+
+
+          document.getElementById("progressWrapper").style.opacity = "0"; // Hide with animation
+          document.getElementById("progressWrapper").style.transform = "translateY(20px)";
+          document.getElementById("progressWrapper").style.pointerEvents = "none";
+          setTimeout(() => { document.getElementById("progressWrapper").style.visibility = "hidden"; }, 500);
+
+          return; // Stop further calculation if final exam condition is not met
+        }
+      }
+
       // Get target score and ensure it's within valid range
       let target = parseInt(document.getElementById("targetScore").value);
       if (isNaN(target)) target = 60;
@@ -547,6 +572,7 @@
 
       let totalContribution = 0;
       let remainingWeight = 0;
+      let totalContributionExcludingFinals = 0;
       
       // Calculate total contribution from entered scores and remaining weight
       components.forEach(([name, w], i) => {
@@ -558,6 +584,9 @@
         
         if (!isNaN(value) && raw.trim() !== "") {
           totalContribution += contribution;
+          if (i !== finalTeorikIndex && i !== finalPratikIndex) {
+            totalContributionExcludingFinals += contribution;
+          }
         } else {
           remainingWeight += w;
         }
@@ -594,37 +623,25 @@
       status.style.opacity = "1";
       status.style.transform = "translateY(0)";
 
-      const passingGrade = 60; // Overall passing grade
+      // Updated status messages based on conditions
+      if (totalContribution < 60) {
+        status.innerHTML = "<div class='fail'><i class='fas fa-times-circle'></i> Maalesef kaldınız</div>";
+        progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
+      } else { // totalContribution >= 60
+        let message = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz!</div>";
+        let barColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
 
-      // 1. Check final exam pass condition if both final scores are entered
-      if (finalTheoRaw !== "" && finalPraRaw !== "") {
-        const finalCombined = (finalTheoreticalScore * 0.6) + (finalPracticalScore * 0.4);
-        if (finalCombined < 50) {
-          status.innerHTML = "<div class='fail'><i class='fas fa-times-circle'></i> Maalesef kaldınız. (Final notu yetersiz)</div>";
-          progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
-          return; // Stop further general pass/fail check if final is failed
+        if (target > 60) {
+            if (totalContribution >= target) {
+                message = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz ve hedef başarılı!</div>";
+                barColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
+            } else { // totalContribution >= 60 && totalContribution < target
+                message = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz ama hedef başarısız.</div>";
+                barColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-yellow');
+            }
         }
-      }
-
-      // 2. Determine overall pass/fail status and target success/failure
-      if (totalContribution < passingGrade) {
-          // Overall average below 60
-          status.innerHTML = "<div class='fail'><i class='fas fa-times-circle'></i> Maalesef kaldınız.</div>";
-          progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-red');
-      } else {
-          // Overall average 60 or above
-          if (target > passingGrade) { // If target is explicitly set higher than 60
-              if (totalContribution >= target) {
-                  status.innerHTML = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz ve hedef başarılı!</div>";
-                  progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
-              } else { // totalContribution < target
-                  status.innerHTML = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz ama hedef başarısız.</div>";
-                  progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-yellow');
-              }
-          } else { // Target is 60 (or less, but clamped to 60), and overall is 60 or above
-              status.innerHTML = "<div class='pass'><i class='fas fa-check-circle'></i> Tebrikler, geçtiniz!</div>";
-              progressBar.style.backgroundColor = getComputedStyle(document.documentElement).getPropertyValue('--progress-green');
-          }
+        status.innerHTML = message;
+        progressBar.style.backgroundColor = barColor;
       }
     }
 
